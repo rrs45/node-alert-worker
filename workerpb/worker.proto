@@ -1,0 +1,34 @@
+syntax= "proto3";
+import "google/protobuf/timestamp.proto";
+
+package worker;
+option go_package="workerpb";
+
+
+message TaskRequest {
+    string node = 1;
+    string condition = 2;
+    string action = 3;
+    string params = 4;
+}
+
+message TaskAck {
+    string condition = 1;
+}
+
+message TaskResult {
+    string node = 1;
+    string condition = 2;
+    string action = 3;
+    string worker = 4;
+    bool success = 5;
+    google.protobuf.Timestamp timestamp = 6;
+
+}
+service TaskService{ 
+    rpc Task(TaskRequest) returns (TaskAck);
+}
+
+service TaskReceiveService{
+    rpc ResultUpdate(TaskResult) returns (TaskAck);
+}
