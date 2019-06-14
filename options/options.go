@@ -2,6 +2,8 @@ package options
 
 import (
 	"flag"
+	"time"
+	log "github.com/sirupsen/logrus"
 )
 
 //AlertWorkerOptions is struct to gather options for the worker
@@ -11,6 +13,7 @@ type AlertWorkerOptions struct {
 	APIServerHost string
 	LogFile       string
 
+	CacheExpireInterval string
 	MaxParallel  int
 	Namespace string
 }
@@ -29,5 +32,16 @@ func (awo *AlertWorkerOptions) AddFlags(fs *flag.FlagSet) {
 
 	fs.IntVar(&awo.MaxParallel, "-max-parallel",3, "Maximum number of remediations that can work in parallel")
 	fs.StringVar(&awo.Namespace, "namespace", "node-alert-worker", "Namespace where worker will be deployed")
+
+	fs.StringVar(&awo.CacheExpireInterval, "cache-expire-interval", "10h", "Time period after which cache entries will expire")
+}
+
+//ValidOrDie checks some of the options are valid
+func (awo *AlertWorkerOptions) ValidOrDie() {
+	_, err := time.ParseDuration(awo.CacheExpireInterval)
+	if err != nil {
+		log.Error("Options - Incorrect cache-expire-interval, sample format: 10s or 1m or 1h; ", err)
+		log.Panic("Incorrect options")
+	}
 
 }

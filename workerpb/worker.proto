@@ -1,5 +1,6 @@
 syntax= "proto3";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 package worker;
 option go_package="workerpb";
@@ -16,6 +17,15 @@ message TaskAck {
     string condition = 1;
 }
 
+message TaskStatus {
+    string action = 1;
+    string worker = 2;
+}
+
+message AllTasks {
+    map<string, TaskStatus> items = 1;
+}
+
 message TaskResult {
     string node = 1;
     string condition = 2;
@@ -27,6 +37,10 @@ message TaskResult {
 }
 service TaskService{ 
     rpc Task(TaskRequest) returns (TaskAck);
+}
+
+service TaskStatusService{ 
+    rpc GetTaskStatus(google.protobuf.Empty) returns (AllTasks);
 }
 
 service TaskReceiveService{

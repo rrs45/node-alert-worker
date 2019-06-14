@@ -8,6 +8,7 @@ import (
 	"github.com/box-node-alert-worker/options"
 	"github.com/box-node-alert-worker/workerpb"
 	"github.com/box-node-alert-worker/pkg/worker"
+	"github.com/box-node-alert-worker/pkg/cache"
 )
 
 /*func startHTTPServer(addr string, port string) *http.Server {
@@ -38,13 +39,15 @@ log.SetLevel(log.InfoLevel)
 nawo := options.NewAlertWorkerOptions()
 nawo.AddFlags(flag.CommandLine)
 flag.Parse()
+nawo.ValidOrDie()
 
 var wg sync.WaitGroup
 workCh := make(chan *workerpb.TaskRequest, 3)
 resultCh := make(chan *workerpb.TaskResult, 3)
+statusCache := cache.NewStatusCache(nawo.CacheExpireInterval) 
 
 wg.Add(3)
-service := worker.NewServer(workCh)
+service := worker.NewServer(workCh, statusCache)
 //srv := startHTTPServer(nawo.ServerAddress, nawo.ServerPort)
 //GRPC server
 go func() {
@@ -56,7 +59,7 @@ go func() {
 //Worker
 go func() {
 	log.Info("Starting worker for node-alert-worker")
-	worker.Work(workCh, resultCh, nawo.MaxParallel)
+	worker.Work(statusCache, workCh, resultCh, nawo.MaxParallel)
 	wg.Done()
 }()
 
