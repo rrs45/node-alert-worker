@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"context"
 	log "github.com/sirupsen/logrus"
 	"github.com/box-node-alert-worker/workerpb"
@@ -8,8 +9,8 @@ import (
 )
 
 //Publish publishes the results
-func Publish(resultCh <-chan *workerpb.TaskResult) {
-	conn, err := grpc.Dial("127.0.0.1:50040", grpc.WithInsecure())
+func Publish(addr string, port string,resultCh <-chan *workerpb.TaskResult) {
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%s",addr,port), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Unable to connect to worker: %v",err)
 		return

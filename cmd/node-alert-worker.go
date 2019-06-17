@@ -66,7 +66,7 @@ go func() {
 //Publisher
 go func() {
 	log.Info("Starting publisher for node-alert-worker")
-	worker.Publish(resultCh)
+	worker.Publish(nawo.ResponderAddress, nawo.ResponderPort, resultCh)
 	wg.Done()
 }()
 

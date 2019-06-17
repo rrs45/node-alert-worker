@@ -3,7 +3,6 @@ package worker
 import (
 		"time"
 		"bytes"
-			
 		"os/exec"
 	
 		log "github.com/sirupsen/logrus"
@@ -45,7 +44,8 @@ func execCmd(node string, play string, condition string) (*workerpb.TaskResult, 
 	log.Infof("Worker - Running: %s %s", node, play)
 	//args := []string{"-i", node, "plays/"+play, "-e", "@/home/rajsingh/.local/bin/ansible-playbook/raj_pwd.yml", "--vault-password-file", "/home/rajsingh/.local/bin/ansible-playbook/vault_pwd.txt"}
 	
-	cmd := exec.Command("/home/rajsingh/.local/bin/ansible-playbook", "-i", node+",", "/home/rajsingh/ansible-skynet/plays/"+play, "-e", "@/home/rajsingh/ansible-skynet/raj_pwd.yml", "--vault-password-file", "/home/rajsingh/ansible-skynet/vault_pwd.txt")
+	//cmd := exec.Command("ansible-playbook", "/ansible/plays/"+play, "-e", "@/ansible/raj_pwd.yml", "--vault-password-file", "/ansible/vault_pwd.txt")
+	cmd := exec.Command("ansible-playbook", "/ansible/plays/"+play, "-e","node="+node, "-e","play="+play)
 	//log.Infof("Worker - running ansible with: %s", args)
 	var stdout, stderr bytes.Buffer
     cmd.Stdout = &stdout
