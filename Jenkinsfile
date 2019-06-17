@@ -13,7 +13,6 @@ pipeline {
     }
     stages {
         stage('Build') {
-            when { branch 'master'  }
             steps {
                 githubCheck(
                     'Build Image': {
@@ -23,7 +22,6 @@ pipeline {
                 )
             }
         }
-
     }
         post {
         always {

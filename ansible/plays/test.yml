@@ -1,0 +1,10 @@
+---
+- name: Test check
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Check containers
+    service:
+      name: kubernetes-minion
+      state: started
+    become: true
