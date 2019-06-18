@@ -27,10 +27,10 @@ func NewAlertWorkerOptions() *AlertWorkerOptions {
 
 //AddFlags adds options to the flagset
 func (awo *AlertWorkerOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&awo.ServerAddress, "address", "0.0.0.0", "Address to bind the alert worker server.")
-	fs.StringVar(&awo.ServerPort, "port", "9191", "Port to bind the alert worker server")
-	fs.StringVar(&awo.ResponderAddress, "address", "0.0.0.0", "Address to bind the alert worker server.")
-	fs.StringVar(&awo.ResponderPort, "port", "50040", "Port to bind the alert worker server")
+	fs.StringVar(&awo.ServerAddress, "server-address", "0.0.0.0", "Address to bind the alert worker server.")
+	fs.StringVar(&awo.ServerPort, "server-port", "9191", "Port to bind the alert worker server")
+	fs.StringVar(&awo.ResponderAddress, "responder-address", "0.0.0.0", "Address to bind the alert worker server.")
+	fs.StringVar(&awo.ResponderPort, "responder-port", "50040", "Port to bind the alert worker server")
 	fs.StringVar(&awo.APIServerHost, "apiserver-host", "", "Custom hostname used to connect to Kubernetes ApiServer")
 	fs.StringVar(&awo.LogFile, "log-file", "/var/log/service/node-alert-worker.log", "Log file to store all logs")
 
