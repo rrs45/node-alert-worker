@@ -28,10 +28,8 @@ func Work(statusCache *cache.StatusCache, workCh <-chan *workerpb.TaskRequest, r
 				Params: task.Params,
 				Timestamp: time.Now(),
 			})
-			res, pass := execCmd(task.Node, task.Action, task.Condition)
-			if pass {
-				resultCh <- res
-			}
+			res := execCmd(task.Node, task.Action, task.Condition)
+			resultCh <- res
 			log.Infof("Worker routine - deleting %s from status cache", cond)
 			statusCache.DelItem(cond)
 			<-limit
@@ -40,7 +38,7 @@ func Work(statusCache *cache.StatusCache, workCh <-chan *workerpb.TaskRequest, r
 	}
 }
 
-func execCmd(node string, play string, condition string) (*workerpb.TaskResult, bool){
+func execCmd(node string, play string, condition string) (*workerpb.TaskResult){
 	log.Infof("Worker - Running: %s %s", node, play)
 	//args := []string{"-i", node, "plays/"+play, "-e", "@/home/rajsingh/.local/bin/ansible-playbook/raj_pwd.yml", "--vault-password-file", "/home/rajsingh/.local/bin/ansible-playbook/vault_pwd.txt"}
 	
@@ -78,7 +76,7 @@ func execCmd(node string, play string, condition string) (*workerpb.TaskResult, 
 		Worker: "Worker-1",
 		Success: false,
 		Timestamp: &ts,
-	  }, false
+	  }
 	} 
 
 	log.Infof("Worker - Out: %s", string(stdout.Bytes()) )
@@ -90,7 +88,7 @@ func execCmd(node string, play string, condition string) (*workerpb.TaskResult, 
 		Worker: "Worker-1",
 		Success: true,
 		Timestamp: &ts,
-	}, true
+	}
 	
 	/*err = cmd.Wait()
 	if err != nil {
