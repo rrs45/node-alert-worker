@@ -1,6 +1,7 @@
 package worker 
 import (
 	"net"
+	"fmt"
 	"context"
 	log "github.com/sirupsen/logrus"
 	"github.com/box-node-alert-worker/workerpb"
@@ -46,7 +47,7 @@ return &workerpb.AllTasks{Items: buf,}, nil
 
 //StartGRPCServer starts GRPC server
 func StartGRPCServer(addr string, port string, service *Server){
-	srv, err := net.Listen("tcp", "127.0.0.1:50050")
+	srv, err := net.Listen("tcp", fmt.Sprintf("%s:%s",addr,port) )
 	if err != nil {
 		log.Fatalf("Failed to start listener: %v", err)
 	}
