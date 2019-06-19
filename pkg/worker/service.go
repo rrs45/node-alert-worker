@@ -14,13 +14,15 @@ import (
 type Server struct {
 	WorkCh chan *workerpb.TaskRequest
 	StatusCache  *cache.StatusCache
+	PodName string
 }
 
 //NewServer initializes task service
-func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache) *Server {
+func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache, podName string) *Server {
 	return &Server{
 		WorkCh: workCh,
 		StatusCache:statusCache,
+		PodName: podName,
 	}
 }
 
@@ -40,7 +42,7 @@ buf := make(map[string]*workerpb.TaskStatus)
 for key, val := range s.StatusCache.GetAll() {
 	buf[key] = &workerpb.TaskStatus{
 		Action: val.Action, 
-		Worker: "Worker-1",}
+		Worker: s.PodName,}
 }
 return &workerpb.AllTasks{Items: buf,}, nil
 }

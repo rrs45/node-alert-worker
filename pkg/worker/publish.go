@@ -11,7 +11,7 @@ import (
 )
 
 //Publish publishes the results
-func Publish(addr string, port string,resultCh <-chan *workerpb.TaskResult) {
+func Publish(addr string, port string, resultCh <-chan *workerpb.TaskResult) {
 	for {
 		select {
 		case res := <- resultCh:
