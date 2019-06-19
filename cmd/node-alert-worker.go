@@ -2,6 +2,7 @@ package main
 import (
 	"sync"	
 	"flag"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 	
@@ -41,13 +42,15 @@ nawo.AddFlags(flag.CommandLine)
 flag.Parse()
 nawo.ValidOrDie()
 
+podName := os.Getenv("POD_NAME")
+
 var wg sync.WaitGroup
 workCh := make(chan *workerpb.TaskRequest, 3)
 resultCh := make(chan *workerpb.TaskResult, 3)
 statusCache := cache.NewStatusCache(nawo.CacheExpireInterval) 
+service := worker.NewServer(workCh, statusCache, podName)
 
 wg.Add(3)
-service := worker.NewServer(workCh, statusCache)
 //srv := startHTTPServer(nawo.ServerAddress, nawo.ServerPort)
 //GRPC server
 go func() {
@@ -59,7 +62,7 @@ go func() {
 //Worker
 go func() {
 	log.Info("Starting worker for node-alert-worker")
-	worker.Work(statusCache, workCh, resultCh, nawo.MaxParallel)
+	worker.Work(statusCache, workCh, resultCh, nawo.MaxParallel, podName)
 	wg.Done()
 }()
 
