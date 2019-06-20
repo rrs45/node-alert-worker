@@ -12,21 +12,27 @@ import (
 
 //Publish publishes the results
 func Publish(addr string, port string, resultCh <-chan *workerpb.TaskResult) {
+PUBLISHLOOP:
 	for {
 		select {
-		case res := <- resultCh:
+		case res, ok := <- resultCh:
+			if !ok {
+				log.Infof("Publisher - Results channel closed")
+				break PUBLISHLOOP
+			}
 			log.Info("Publisher - received ",res)
 			conn, err := connect(addr,port)
 			client := workerpb.NewTaskReceiveServiceClient(conn)
 			response, err := client.ResultUpdate(context.Background(), res)
 			if err != nil {
-				log.Errorf("Unable to send response to scheduler: %v",err)
+				log.Errorf("Publisher - Unable to send response to scheduler: %v",err)
 				continue
 			}
 			conn.Close()
 			log.Infof("Publisher - sent %s to scheduler", response.Condition)
 		}
 	}
+	log.Info("Publisher - Stopping")
 }
 
 func connect(addr string, port string) (*grpc.ClientConn, error){

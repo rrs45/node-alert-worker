@@ -3,6 +3,8 @@ import (
 	"sync"	
 	"flag"
 	"os"
+	"os/signal"
+	"syscall"
 
 	log "github.com/sirupsen/logrus"
 	
@@ -47,22 +49,25 @@ podName := os.Getenv("POD_NAME")
 var wg sync.WaitGroup
 workCh := make(chan *workerpb.TaskRequest, 3)
 resultCh := make(chan *workerpb.TaskResult, 3)
+stopCh := make(chan os.Signal)
 statusCache := cache.NewStatusCache(nawo.CacheExpireInterval) 
 service := worker.NewServer(workCh, statusCache, podName)
+
+signal.Notify(stopCh, syscall.SIGTERM)
 
 wg.Add(3)
 //srv := startHTTPServer(nawo.ServerAddress, nawo.ServerPort)
 //GRPC server
 go func() {
 	log.Info("Starting GRPC service for node-alert-worker")
-	worker.StartGRPCServer(nawo.ServerAddress, nawo.ServerPort, service)
+	worker.StartGRPCServer(nawo.ServerAddress, nawo.ServerPort, service, stopCh)
 	wg.Done()
 }()
 
 //Worker
 go func() {
 	log.Info("Starting worker for node-alert-worker")
-	worker.Work(statusCache, workCh, resultCh, nawo.MaxParallel, podName)
+	worker.Work(statusCache, workCh, resultCh, stopCh, nawo.MaxParallel, podName)
 	wg.Done()
 }()
 
