@@ -1,6 +1,7 @@
 package worker 
 import (
 	"net"
+	"os"
 	"fmt"
 	"context"
 	log "github.com/sirupsen/logrus"
@@ -48,17 +49,25 @@ return &workerpb.AllTasks{Items: buf,}, nil
 }
 
 //StartGRPCServer starts GRPC server
-func StartGRPCServer(addr string, port string, service *Server){
+func StartGRPCServer(addr string, port string, service *Server, stopCh chan os.Signal){
 	srv, err := net.Listen("tcp", fmt.Sprintf("%s:%s",addr,port) )
 	if err != nil {
-		log.Fatalf("Failed to start listener: %v", err)
+		log.Fatalf("GRPC Server - Failed to start listener: %v", err)
 	}
 	
 	s := grpc.NewServer()
 	workerpb.RegisterTaskServiceServer(s, service)
 	
-	log.Info("Starting Task service ")
+	log.Info("GRPC Server - Starting routine to listen for SIGTERM")
+	go func() {
+		<- stopCh
+		log.Infof("GRPC Server routine- Caught SIGTERM, shutting down GRPC listener")
+		close(service.WorkCh)
+		s.GracefulStop()
+	}()
+
+	log.Info("GRPC Server - Starting Task service ")
 	if err := s.Serve(srv); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+		log.Fatalf("GRPC Server - Failed to serve: %v", err)
 	}
 }

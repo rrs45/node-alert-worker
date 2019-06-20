@@ -4,6 +4,7 @@ import (
 		"time"
 		"bytes"
 		"os/exec"
+		"os"
 	
 		log "github.com/sirupsen/logrus"
 		"github.com/box-node-alert-worker/workerpb"
@@ -14,11 +15,17 @@ import (
 )
 
 //Work kicksoff Ansible play based on requeste received
-func Work(statusCache *cache.StatusCache, workCh <-chan *workerpb.TaskRequest, resultCh chan<- *workerpb.TaskResult, maxTasks int, podName string ) {
+func Work(statusCache *cache.StatusCache, workCh <-chan *workerpb.TaskRequest, resultCh chan<- *workerpb.TaskResult, stopCh <-chan os.Signal, maxTasks int, podName string ) {
 	limit := make(chan struct{}, maxTasks)
+
+WORKERLOOP:
 	for {
 		select {
-		case task := <-workCh:
+		case task, ok := <-workCh:
+			if !ok {
+				log.Infof("Worker - Work channel closed")
+				break WORKERLOOP
+			}
 			limit <- struct{}{}	
 			go func() {
 				cond := task.Node +"_" + task.Condition
@@ -56,8 +63,16 @@ func Work(statusCache *cache.StatusCache, workCh <-chan *workerpb.TaskRequest, r
 				statusCache.DelItem(cond)
 				<-limit
 			}()
+				
 		}
 	}
+//Checking if all tasks are completed	
+for i := 0; i < maxTasks; i++ {
+	limit <- struct{}{}	
+}
+log.Info("Worker - All tasks completed, stopping worker")
+close(resultCh)
+
 }
 
 func execCmd(node string, play string, condition string) (bool){
