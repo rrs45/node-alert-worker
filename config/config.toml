@@ -1,0 +1,14 @@
+[general]
+log_file = "/var/log/service/node-alert-worker.log"
+#log_file = "/tmp/node-alert-worker.log"
+cache_expire_interval = "10h"
+max_parallel_tasks = 3
+namespace = "node-alert-worker"
+
+[server]
+address = "0.0.0.0"
+port  =  "9191"
+
+[responder]
+address = "10.228.149.225"
+port = "9090"
