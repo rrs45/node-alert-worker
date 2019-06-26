@@ -4,48 +4,42 @@ import (
 	"flag"
 	"time"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-//AlertWorkerOptions is struct to gather options for the worker
-type AlertWorkerOptions struct {
-	ServerAddress string
-	ServerPort    string
-	ResponderAddress string
-	ResponderPort string
-	APIServerHost string
-	LogFile       string
-
-	CacheExpireInterval string
-	MaxParallel  int
-	Namespace string
+//NewConfigFromFile parses config file  
+func NewConfigFromFile(configFile string) (*viper.Viper, error) {
+	//dir, file := filepath.Split(configFile)
+	v := viper.New()
+	v.SetConfigType("toml")
+	v.SetConfigFile(configFile)
+	//v.AddConfigPath(dir)
+	v.AutomaticEnv()
+	err := v.ReadInConfig()
+	return v, err
 }
 
-//NewAlertWorkerOptions returns a flagset
-func NewAlertWorkerOptions() *AlertWorkerOptions {
-	return &AlertWorkerOptions{}
+//Config defines configuration parameters
+type Config struct {
+	File string
 }
 
-//AddFlags adds options to the flagset
-func (awo *AlertWorkerOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&awo.ServerAddress, "server-address", "0.0.0.0", "Address to bind the alert worker server.")
-	fs.StringVar(&awo.ServerPort, "server-port", "9191", "Port to bind the alert worker server")
-	fs.StringVar(&awo.ResponderAddress, "responder-address", "0.0.0.0", "Address to bind the alert worker server.")
-	fs.StringVar(&awo.ResponderPort, "responder-port", "50040", "Port to bind the alert worker server")
-	fs.StringVar(&awo.APIServerHost, "apiserver-host", "", "Custom hostname used to connect to Kubernetes ApiServer")
-	fs.StringVar(&awo.LogFile, "log-file", "/var/log/service/node-alert-worker.log", "Log file to store all logs")
-
-	fs.IntVar(&awo.MaxParallel, "-max-parallel",3, "Maximum number of remediations that can work in parallel")
-	fs.StringVar(&awo.Namespace, "namespace", "node-alert-worker", "Namespace where worker will be deployed")
-
-	fs.StringVar(&awo.CacheExpireInterval, "cache-expire-interval", "10h", "Time period after which cache entries will expire")
+//GetConfig returna new config file
+func GetConfig() *Config {
+	return &Config{}
 }
 
-//ValidOrDie checks some of the options are valid
-func (awo *AlertWorkerOptions) ValidOrDie() {
-	_, err := time.ParseDuration(awo.CacheExpireInterval)
+//AddFlags takes config file input
+func (c *Config) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&c.File, "file", "/home/rajsingh/go/src/github.com/box-node-alert-worker/config/config.toml", "Configuration file path")
+}
+
+//ValidOrDie validates some of the config parameters
+func ValidOrDie(ago *viper.Viper) {
+	log.Infof("%+v",ago.AllSettings())
+	_, err := time.ParseDuration(ago.GetString("general.cache_expire_interval"))
 	if err != nil {
-		log.Error("Options - Incorrect cache-expire-interval, sample format: 10s or 1m or 1h; ", err)
+		log.Errorf("Options - Incorrect general.cache_expire_interval: %v ", err)
 		log.Panic("Incorrect options")
 	}
-
 }

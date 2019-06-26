@@ -57,6 +57,7 @@ func StartGRPCServer(addr string, port string, service *Server, stopCh chan os.S
 	
 	s := grpc.NewServer()
 	workerpb.RegisterTaskServiceServer(s, service)
+	workerpb.RegisterTaskStatusServiceServer(s, service)
 	
 	log.Info("GRPC Server - Starting routine to listen for SIGTERM")
 	go func() {
@@ -66,7 +67,7 @@ func StartGRPCServer(addr string, port string, service *Server, stopCh chan os.S
 		s.GracefulStop()
 	}()
 
-	log.Info("GRPC Server - Starting Task service ")
+	log.Info("GRPC Server - Starting Task and TaskStatus service ")
 	if err := s.Serve(srv); err != nil {
 		log.Fatalf("GRPC Server - Failed to serve: %v", err)
 	}
