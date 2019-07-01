@@ -11,5 +11,5 @@ RUN yum --disablerepo=packages-box install -y python-pyasn1 && \
 RUN pip install -r ansible/requirements.txt
 ADD ./build/node-alert-worker /node-alert-worker
 ADD ./ansible /ansible
-ADD config /config
+ADD ./config /config
 RUN chown -R container:container /config  && chown -R container:container /ansible  && chown container:container /node-alert-worker

@@ -9,6 +9,7 @@ import (
 	"github.com/box-node-alert-worker/pkg/cache"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/peer"
 )
 
 //Server struct initializes task service
@@ -29,7 +30,11 @@ func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache
 
 //Task receives new task
 func (s *Server) Task(ctx context.Context, req *workerpb.TaskRequest) (*workerpb.TaskAck, error){
-log.Infof("GRPC Server - Received task request: %+v", req)
+p, ok := peer.FromContext(ctx)
+if !ok {
+    log.Error("GRPC Server - Cannot get peer info")
+}
+log.Infof("GRPC Server - Received task from %+v, request: %+v", p.Addr,req)
 s.WorkCh <- req
 return &workerpb.TaskAck {
 	Condition: req.GetCondition(),
