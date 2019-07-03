@@ -8,7 +8,7 @@ ENV container=docker
 ADD ./ansible /ansible
 RUN yum --disablerepo=packages-box install -y python-pyasn1 && \ 
     yum install -y python-pip PyYAML python-jinja2 python-httplib2 python-keyczar python-paramiko
-RUN pip install -r ansible/requirements.txt
+RUN pip install --upgrade pip && pip install -r ansible/requirements.txt
 ADD ./build/node-alert-worker /node-alert-worker
 ADD ./ansible /ansible
 ADD ./config /config

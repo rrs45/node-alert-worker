@@ -1,11 +1,13 @@
+---
+vault_service: node-alert-worker
 # vault file to read the token from
-vault_token_file: /box/etc/vault/tokens/node-alert-worker
+vault_token_file: /box/etc/vault/tokens/{{ vault_service }}
 vault_cacerts: /box/etc/vault/tokens/ca.crt
 
 vault_url: "{{ lookup('env','VAULT_ADDR') }}"
 vault_dc: "{{ lookup('env','VAULT_DATACENTER') }}"
 vault_env: "{{ lookup('env','VAULT_ENV') }}"
-vault_path: "{{ vault_dc }}/{{ vault_env }}/generic/compute-jump/private"
+vault_path: "{{ vault_dc }}/{{ vault_env }}/generic/{{ vault_service }}/private"
 
 # secrets path
 vault_device42_user: "{{ vault_path }}/device42/user/0:value"
@@ -14,6 +16,12 @@ vault_jira_user: "{{ vault_path }}/jira/user/0:value"
 vault_jira_password: "{{ vault_path }}/jira/password/0:value"
 vault_nomad_token: "{{ vault_path }}/nomad/token/0:value"
 vault_sensu_token: "{{ vault_path }}/sensu/token/0:value"
+vault_login_user: "{{ vault_path }}/login/user/0:value"
+vault_login_dn: "{{ vault_path }}/login/dn/0:value"
+vault_login_password: "{{ vault_path }}/login/password/0:value"
+vault_login_ssh_priv: "{{ vault_path }}/login/ssh_priv/0:value"
+vault_login_ssh_pub: "{{ vault_path }}/login/ssh_pub/0:value"
+
 
 vault_token: "{{ lookup('pipe', 'sudo cat {{ vault_token_file }}') }}"
 vault_lookup: "url={{ vault_url }} validate_certs=True cacert={{ vault_cacerts }} token={{ vault_token }} secret="
@@ -26,3 +34,8 @@ jira_password: "{{ lookup('hashi_vault', vault_lookup + vault_jira_password ) }}
 jira_auth: "{{ jira_user }}:{{ jira_password }}"
 nomad_token: "{{ lookup('hashi_vault', vault_lookup + vault_nomad_token ) }}"
 sensu_token: "{{ lookup('hashi_vault', vault_lookup + vault_sensu_token ) }}"
+login_user: "{{ lookup('hashi_vault', vault_lookup + vault_login_user ) }}"
+login_dn: "{{ lookup('hashi_vault', vault_lookup + vault_login_dn ) }}"
+login_password: "{{ lookup('hashi_vault', vault_lookup + vault_login_password ) }}"
+login_ssh_priv: "{{ lookup('hashi_vault', vault_lookup + vault_login_ssh_priv) }}"
+login_ssh_pub: "{{ lookup('hashi_vault', vault_lookup + vault_login_ssh_pub ) }}"
