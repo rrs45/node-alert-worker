@@ -36,7 +36,7 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 
 //ValidOrDie validates some of the config parameters
 func ValidOrDie(ago *viper.Viper) {
-	log.Infof("%+v",ago.AllSettings())
+	log.Infof("Options - %+v",ago.AllSettings())
 	_, err := time.ParseDuration(ago.GetString("general.cache_expire_interval"))
 	if err != nil {
 		log.Errorf("Options - Incorrect general.cache_expire_interval: %v ", err)

@@ -1,5 +1,8 @@
 package worker 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"net"
 	"os"
 	"fmt"
@@ -10,6 +13,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/credentials"
 )
 
 //Server struct initializes task service
@@ -54,13 +58,40 @@ return &workerpb.AllTasks{Items: buf,}, nil
 }
 
 //StartGRPCServer starts GRPC server
-func StartGRPCServer(addr string, port string, service *Server, stopCh chan os.Signal){
+func StartGRPCServer(addr string, port string, certFile string, keyFile string, caCertFile string, service *Server, stopCh chan os.Signal){
+	// Load the certificates from disk
+	certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		log.Fatalf("GRPC Server - Could not load certificates: %v", err)
+	}
+
+	// Create a certificate pool from the certificate authority
+	certPool := x509.NewCertPool()
+	ca, err := ioutil.ReadFile(caCertFile)
+	if err != nil {
+		log.Fatalf("GRPC Server - Could read CA certificates: %v", err)
+	}
+
+	// Append the client certificates from the CA
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		log.Fatalf("GRPC Server - Could not append CA certs to pool: %v", err)
+	}
+	
 	srv, err := net.Listen("tcp", fmt.Sprintf("%s:%s",addr,port) )
 	if err != nil {
 		log.Fatalf("GRPC Server - Failed to start listener: %v", err)
 	}
 	
-	s := grpc.NewServer()
+	tlsConfig := tls.Config{
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		Certificates: []tls.Certificate{certificate},
+		ClientCAs:    certPool,
+	}
+	tlsConfig.BuildNameToCertificate()
+	// Create the TLS configuration to pass to the GRPC server
+	creds := credentials.NewTLS(&tlsConfig)
+
+	s := grpc.NewServer(grpc.Creds(creds))
 	workerpb.RegisterTaskServiceServer(s, service)
 	workerpb.RegisterTaskStatusServiceServer(s, service)
 	

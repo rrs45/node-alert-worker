@@ -67,7 +67,7 @@ wg.Add(3)
 //GRPC server
 go func() {
 	log.Info("Starting GRPC service for node-alert-worker")
-	worker.StartGRPCServer(nawo.GetString("server.address"), nawo.GetString("server.port"), service, stopCh)
+	worker.StartGRPCServer(nawo.GetString("server.address"), nawo.GetString("server.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), service, stopCh)
 	wg.Done()
 }()
 
@@ -81,7 +81,7 @@ go func() {
 //Publisher
 go func() {
 	log.Info("Starting publisher for node-alert-worker")
-	worker.Publish(nawo.GetString("responder.address"), nawo.GetString("responder.port"), resultCh)
+	worker.Publish(nawo.GetString("responder.address"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh)
 	wg.Done()
 }()
 
