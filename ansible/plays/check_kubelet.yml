@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+  - name: verify docker is started
+    command: /usr/bin/docker ps
+    register: out
+
+  - debug:
+      var: out

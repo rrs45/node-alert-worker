@@ -12,3 +12,8 @@ port  =  "9191"
 [responder]
 address = "10.228.149.225"
 port = "9090"
+
+[certs]
+cert_file = "/box/etc/pki/node-alert-worker.crt"
+key_file = "/box/etc/pki/node-alert-worker.key"
+ca_cert_file = "/box/etc/pki/node-alert-worker.intermediate.crt"

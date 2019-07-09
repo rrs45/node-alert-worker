@@ -1,6 +1,9 @@
 package worker
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"fmt"
 	"math/rand"
 	"time"
@@ -8,10 +11,36 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/box-node-alert-worker/workerpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 //Publish publishes the results
-func Publish(addr string, port string, resultCh <-chan *workerpb.TaskResult) {
+func Publish(addr string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult) {
+// Load the certificates from disk
+certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
+if err != nil {
+	log.Fatalf("Publisher - Could not load certificates: %v", err)
+}
+
+// Create a certificate pool from the certificate authority
+certPool := x509.NewCertPool()
+ca, err := ioutil.ReadFile(caCertFile)
+if err != nil {
+	log.Fatalf("Publisher - Could read CA certificates: %v", err)
+}
+
+// Append the client certificates from the CA
+if ok := certPool.AppendCertsFromPEM(ca); !ok {
+	log.Fatalf("Publisher - Could not append CA certs to pool: %v", err)
+}
+
+// Create the TLS credentials for transport
+creds := credentials.NewTLS(&tls.Config{
+	ServerName: "skynet-node-alert-responder.dsv31.boxdc.net",
+	Certificates: []tls.Certificate{certificate},
+	RootCAs:      certPool,
+})
+	
 PUBLISHLOOP:
 	for {
 		select {
@@ -21,7 +50,7 @@ PUBLISHLOOP:
 				break PUBLISHLOOP
 			}
 			log.Info("Publisher - received ",res)
-			conn, err := connect(addr,port)
+			conn, err := connect(addr,port, creds)
 			client := workerpb.NewTaskReceiveServiceClient(conn)
 			response, err := client.ResultUpdate(context.Background(), res)
 			if err != nil {
@@ -35,9 +64,9 @@ PUBLISHLOOP:
 	log.Info("Publisher - Stopping")
 }
 
-func connect(addr string, port string) (*grpc.ClientConn, error){
+func connect(addr string, port string, creds credentials.TransportCredentials) (*grpc.ClientConn, error){
 	for {		
-			conn, err := grpc.Dial(fmt.Sprintf("%s:%s",addr,port), grpc.WithInsecure())
+			conn, err := grpc.Dial(fmt.Sprintf("%s:%s",addr,port),  grpc.WithTransportCredentials(creds))
 			if err != nil {
 				n := rand.Intn(10)
 				time.Sleep(time.Duration(n)*time.Second)
