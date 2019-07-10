@@ -8,14 +8,17 @@ import (
 	"math/rand"
 	"time"
 	"context"
+
 	log "github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"github.com/box-node-alert-worker/workerpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
 
 //Publish publishes the results
-func Publish(addr string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult) {
+func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult) {
 // Load the certificates from disk
 certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
 if err != nil {
@@ -50,7 +53,7 @@ PUBLISHLOOP:
 				break PUBLISHLOOP
 			}
 			log.Info("Publisher - received ",res)
-			conn, err := connect(addr,port, creds)
+			conn, err := connect(client, namespace, port, creds)
 			client := workerpb.NewTaskReceiveServiceClient(conn)
 			response, err := client.ResultUpdate(context.Background(), res)
 			if err != nil {
@@ -64,14 +67,24 @@ PUBLISHLOOP:
 	log.Info("Publisher - Stopping")
 }
 
-func connect(addr string, port string, creds credentials.TransportCredentials) (*grpc.ClientConn, error){
-	for {		
+func connect(client *kubernetes.Clientset, namespace string, port string, creds credentials.TransportCredentials) (*grpc.ClientConn, error){
+	
+	for {	
+			podList, err := client.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+			if err != nil {
+				log.Errorf("Publisher - Could not list responder pod: %v", err)
+				n := rand.Intn(10)
+				log.Infof("Publisher - retrying after %v seconds", n)
+				time.Sleep(time.Duration(n)*time.Second)
+				continue
+			}	
+			addr := podList.Items[0].Status.PodIP
 			conn, err := grpc.Dial(fmt.Sprintf("%s:%s",addr,port),  grpc.WithTransportCredentials(creds))
 			if err != nil {
-				n := rand.Intn(10)
-				time.Sleep(time.Duration(n)*time.Second)
 				log.Errorf("Publisher - Unable to connect to worker: %v",err)
-				log.Info("Publisher - retrying connection to responder")
+				n := rand.Intn(10)
+				log.Infof("Publisher - retrying after %v seconds", n)
+				time.Sleep(time.Duration(n)*time.Second)
 				continue
 			} else {
 				return conn, nil
