@@ -8,9 +8,11 @@ namespace = "node-alert-worker"
 [server]
 address = "0.0.0.0"
 port  =  "9191"
+health_check_port = "8080"
 
 [responder]
-address = "10.228.149.225"
+namespace = "node-alert-responder"
+#address = "10.228.149.225"
 port = "9090"
 
 [certs]
