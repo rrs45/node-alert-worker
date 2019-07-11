@@ -12,4 +12,7 @@ RUN pip install --upgrade pip && pip install -r ansible/requirements.txt
 ADD ./build/node-alert-worker /node-alert-worker
 ADD ./ansible /ansible
 ADD ./config /config
-RUN chown -R container:container /config  && chown -R container:container /ansible  && chown container:container /node-alert-worker
+RUN mkdir /etc/ansible-repo && chown container:container /etc/ansible-repo && \
+    chown -R container:container /config  && \
+    chown -R container:container /ansible  && \
+    chown container:container /node-alert-worker
