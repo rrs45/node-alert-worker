@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -ex
+ls -la
 
 godir=/tmp/go/src/github.com
 

@@ -12,11 +12,17 @@ pipeline {
         string(name: "BUILD_NUMBER", defaultValue: "", description: "Replay build value")
     }
     stages {
-        stage('Build') 
-        {when { branch 'master'  }
+        stage('Build') {
+            when { branch 'master'  }
             steps {
                 githubCheck(
                     'Build Image': {
+                        if(!fileExists("./ansible-skynet")) {
+                            dir("./ansible-skynet") {
+                                deleteDir()
+                            }
+                        }
+                        sh "git clone git@git.dev.box.net:skynet/ansible-skynet.git"
                         buildImage()
                         echo "Just built image with id ${builtImage.imageId}"
                     }
