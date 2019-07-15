@@ -112,7 +112,7 @@ go func() {
 //Worker
 go func() {
 	log.Info("Starting worker for node-alert-worker")
-	worker.Work(statusCache, workCh, resultCh, stopCh, nawo.GetInt("general.max_parallel_tasks"), podName)
+	worker.Work(statusCache, workCh, resultCh, stopCh, nawo.GetInt("general.max_parallel_tasks"), podName, nawo.GetString("scripts.dir"))
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatalf("Could not stop http server: %s", err)
 	}
