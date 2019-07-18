@@ -3,6 +3,7 @@ package options
 import (
 	"flag"
 	"time"
+	"os"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -37,11 +38,15 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 }
 
 //ValidOrDie validates some of the config parameters
-func ValidOrDie(ago *viper.Viper) {
-	log.Infof("Options - %+v",ago.AllSettings())
-	_, err := time.ParseDuration(ago.GetString("general.cache_expire_interval"))
+func ValidOrDie(awo *viper.Viper) {
+	log.Infof("Options - %+v",awo.AllSettings())
+	_, err := time.ParseDuration(awo.GetString("general.cache_expire_interval"))
 	if err != nil {
 		log.Errorf("Options - Incorrect general.cache_expire_interval: %v ", err)
+		log.Panic("Incorrect options")
+	}
+	if _, err1 := os.Stat(awo.GetString("scripts.dir")); os.IsNotExist(err) {
+		log.Errorf("Options - Incorrect scripts.dir: %v ", err1)
 		log.Panic("Incorrect options")
 	}
 }

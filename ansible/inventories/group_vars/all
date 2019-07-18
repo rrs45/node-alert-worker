@@ -1,4 +1,12 @@
 ---
+## General
+pod_name: "{{ lookup('env','POD_NAME') }}"
+cluster: "{{ lookup('env','CLUSTER') }}"
+inventory_dir: ./inventories
+apf_uri: https://nomad.prod.box.net/patchingstate/api
+
+## Vault Specific
+
 vault_service: node-alert-worker
 # vault file to read the token from
 vault_token_file: /box/etc/vault/tokens/{{ vault_service }}
@@ -21,6 +29,8 @@ vault_login_dn: "{{ vault_path }}/login/dn/0:value"
 vault_login_password: "{{ vault_path }}/login/password/0:value"
 vault_login_ssh_priv: "{{ vault_path }}/login/ssh_priv/0:value"
 vault_login_ssh_pub: "{{ vault_path }}/login/ssh_pub/0:value"
+
+sensu_url:  "https://sensu.{{ vault_env }}.box.net:3000"
 
 
 vault_token: "{{ lookup('pipe', 'sudo cat {{ vault_token_file }}') }}"

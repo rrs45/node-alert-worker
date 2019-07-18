@@ -5,6 +5,10 @@ cache_expire_interval = "10h"
 max_parallel_tasks = 3
 namespace = "node-alert-worker"
 
+# This section comprises option for running scripts including ansible plays
+[scripts]
+dir = "/etc/ansible-repo"
+
 [server]
 address = "0.0.0.0"
 port  =  "9191"
