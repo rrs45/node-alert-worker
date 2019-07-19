@@ -81,7 +81,7 @@ func execCmd(routineID int, node string, play string, condition string, scriptsD
 	os.Chdir(scriptsDir)
 
 	cmdName := "ansible-playbook"
-	cmdArgs := []string{"-i", node, play, "-e", "play_name="+play}
+	cmdArgs := []string{"-i", node, ",", play, "-e", "play_name="+play}
 	cmd := exec.Command(cmdName, cmdArgs...)
 	log.Infof("Worker Routine%d - Running: %s %v", routineID, cmdName, cmdArgs)
 
