@@ -29,18 +29,19 @@ pipeline {
                 )
             }
         }
-        stage('Deploy To Sandbox') {
-            when { branch 'master'  }
-            steps {
-                deploy cluster: 'sandbox', app: SKYNET_APP, watch: false, canary: false
-            }
-        }
         stage('Deploy To DSV31') {
             when { branch 'master'  }
             steps {
                 deploy cluster: 'dsv31', app: SKYNET_APP, watch: false, canary: false
             }
         }
+        stage('Deploy To Sandbox') {
+            when { branch 'master'  }
+            steps {
+                deploy cluster: 'sandbox', app: SKYNET_APP, watch: false, canary: false
+            }
+        }
+        
     }
         post {
         always {
