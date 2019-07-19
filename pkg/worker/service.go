@@ -45,10 +45,10 @@ curTime := time.Now().Unix()
 metricsData := make([][]byte, 4)
 
 log.Infof("GRPC Server - Received task from %+v, request: %+v", p.Addr,req)
-metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.node %d %s pod=%s", curTime, req.Node, s.PodName)) )
-metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.condition %d %s pod=%s",curTime, req.Condition, s.PodName)) )
-metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.action %d %s pod=%s", curTime, req.Action, s.PodName)) )
-metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.params %d %s pod=%s", curTime, req.Params, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.node %d %s pod=%s", curTime, req.Node, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.condition %d %s pod=%s",curTime, req.Condition, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.action %d %s pod=%s", curTime, req.Action, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.params %d %s pod=%s", curTime, req.Params, s.PodName)) )
 for _, metric := range metricsData {
 	err := ioutil.WriteFile(s.MetricsPath, metric, 0644) 
 	if err!= nil {
