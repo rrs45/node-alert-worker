@@ -22,11 +22,11 @@ type Server struct {
 	WorkCh chan *workerpb.TaskRequest
 	StatusCache  *cache.StatusCache
 	PodName string
-	MetricsPath string
+	MetricsPath *os.File
 }
 
 //NewServer initializes task service
-func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache, podName string, metricsPath string) *Server {
+func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache, podName string, metricsPath *os.File) *Server {
 	return &Server{
 		WorkCh: workCh,
 		StatusCache:statusCache,
@@ -46,8 +46,9 @@ curTime := time.Now().Unix()
 log.Infof("GRPC Server - Received task from %+v, request: %+v", p.Addr,req)
 metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received %d 1 node=%s condition=%s action=%s pod=%s", curTime, req.Node, req.Condition, req.Action, s.PodName))
 
-err := ioutil.WriteFile(s.MetricsPath, metricsData, 0644) 
-if err!= nil {
+//err := ioutil.WriteFile(s.MetricsPath, metricsData, 0644) 
+_, err := s.MetricsPath.Write(metricsData)
+if err != nil {
 	log.Errorf("GRPC Server - Could not write to metrics file: %v", err)
 }
 
