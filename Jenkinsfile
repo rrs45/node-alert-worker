@@ -17,7 +17,7 @@ pipeline {
             steps {
                 githubCheck(
                     'Build Image': {
-                        if(!fileExists("./ansible-skynet")) {
+                        if(fileExists("./ansible-skynet")) {
                             dir("./ansible-skynet") {
                                 deleteDir()
                             }
