@@ -1,6 +1,7 @@
 [general]
 log_file = "/var/log/service/node-alert-worker.log"
-#log_file = "/tmp/node-alert-worker.log"
+received_metrics_file = "/var/metrics/received_metrics.log"
+results_metrics_file = "/var/metrics/results_metrics.log"
 cache_expire_interval = "10h"
 max_parallel_tasks = 3
 namespace = "node-alert-worker"
@@ -16,7 +17,6 @@ health_check_port = "8080"
 
 [responder]
 namespace = "node-alert-responder"
-#address = "10.228.149.225"
 port = "9090"
 
 [certs]

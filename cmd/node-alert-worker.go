@@ -96,7 +96,7 @@ workCh := make(chan *workerpb.TaskRequest, 3)
 resultCh := make(chan *workerpb.TaskResult, 3)
 stopCh := make(chan os.Signal)
 statusCache := cache.NewStatusCache(nawo.GetString("general.cache_expire_interval")) 
-service := worker.NewServer(workCh, statusCache, podName)
+service := worker.NewServer(workCh, statusCache, podName, nawo.GetString("general.received_metrics_file"))
 
 signal.Notify(stopCh, syscall.SIGTERM)
 
@@ -122,7 +122,7 @@ go func() {
 //Publisher
 go func() {
 	log.Info("Starting publisher for node-alert-worker")
-	worker.Publish(clientset, nawo.GetString("responder.namespace"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh)
+	worker.Publish(clientset, nawo.GetString("responder.namespace"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh, nawo.GetString("general.received_metrics_file"))
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatalf("Could not stop http server: %s", err)
 	}

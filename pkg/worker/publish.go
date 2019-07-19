@@ -18,7 +18,7 @@ import (
 )
 
 //Publish publishes the results
-func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult) {
+func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult, metricsFile string) {
 // Load the certificates from disk
 certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
 if err != nil {
@@ -53,6 +53,18 @@ PUBLISHLOOP:
 				break PUBLISHLOOP
 			}
 			log.Info("Publisher - received ",res)
+			curTime := time.Now().Unix()
+			metricsData := make([][]byte, 4)
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.node %d %s pod=%s", curTime, res.Node, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.condition %d %s pod=%s",curTime, res.Condition, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.action %d %s pod=%s", curTime, res.Action, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.success %d %v pod=%s", curTime, res.Success, res.Worker)) )
+			for _, metric := range metricsData {
+				err := ioutil.WriteFile(metricsFile, metric, 0644) 
+				if err!= nil {
+					log.Errorf("GRPC Server - Could not write to metrics file: %v", err)
+				}
+			}
 			conn, err := connect(client, namespace, port, creds)
 			client := workerpb.NewTaskReceiveServiceClient(conn)
 			response, err := client.ResultUpdate(context.Background(), res)
