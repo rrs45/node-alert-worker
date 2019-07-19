@@ -55,10 +55,10 @@ PUBLISHLOOP:
 			log.Info("Publisher - received ",res)
 			curTime := time.Now().Unix()
 			metricsData := make([][]byte, 4)
-			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.node %d %s pod=%s", curTime, res.Node, res.Worker)) )
-			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.condition %d %s pod=%s",curTime, res.Condition, res.Worker)) )
-			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.action %d %s pod=%s", curTime, res.Action, res.Worker)) )
-			metricsData = append(metricsData, []byte(fmt.Sprintf("put task.result.success %d %v pod=%s", curTime, res.Success, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result.node %d %s pod=%s", curTime, res.Node, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result.condition %d %s pod=%s",curTime, res.Condition, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result.action %d %s pod=%s", curTime, res.Action, res.Worker)) )
+			metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result.success %d %v pod=%s", curTime, res.Success, res.Worker)) )
 			for _, metric := range metricsData {
 				err := ioutil.WriteFile(metricsFile, metric, 0644) 
 				if err!= nil {
