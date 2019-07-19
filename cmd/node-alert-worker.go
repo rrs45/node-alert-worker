@@ -74,6 +74,13 @@ if err!= nil {
 options.ValidOrDie(nawo)
 logFile, _ := os.OpenFile(nawo.GetString("general.log_file"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 defer logFile.Close()
+
+recvMetricsFile, _ := os.Create(nawo.GetString("general.received_metrics_file"))
+defer recvMetricsFile.Close()
+
+resMetricsFile, _ := os.Create(nawo.GetString("general.results_metrics_file"))
+defer resMetricsFile.Close()
+
 //Set logrus
 log.SetFormatter(&log.JSONFormatter{})
 log.SetLevel(log.InfoLevel)
@@ -96,7 +103,7 @@ workCh := make(chan *workerpb.TaskRequest, 3)
 resultCh := make(chan *workerpb.TaskResult, 3)
 stopCh := make(chan os.Signal)
 statusCache := cache.NewStatusCache(nawo.GetString("general.cache_expire_interval")) 
-service := worker.NewServer(workCh, statusCache, podName, nawo.GetString("general.received_metrics_file"))
+service := worker.NewServer(workCh, statusCache, podName, recvMetricsFile)
 
 signal.Notify(stopCh, syscall.SIGTERM)
 
@@ -122,7 +129,7 @@ go func() {
 //Publisher
 go func() {
 	log.Info("Starting publisher for node-alert-worker")
-	worker.Publish(clientset, nawo.GetString("responder.namespace"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh, nawo.GetString("general.results_metrics_file"))
+	worker.Publish(clientset, nawo.GetString("responder.namespace"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh, resMetricsFile)
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatalf("Could not stop http server: %s", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
+	"os"
 	"fmt"
 	"math/rand"
 	"time"
@@ -18,7 +19,7 @@ import (
 )
 
 //Publish publishes the results
-func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult, metricsFile string) {
+func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult, metricsFile *os.File) {
 // Load the certificates from disk
 certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
 if err != nil {
@@ -60,7 +61,8 @@ PUBLISHLOOP:
 			}
 		
 			metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result %d %d node=%s condition=%s action=%s pod=%s", curTime, successInt, res.Node, res.Condition, res.Action, res.Worker))
-			err := ioutil.WriteFile(metricsFile, metricsData, 0644) 
+			//err := ioutil.WriteFile(metricsFile, metricsData, 0644) 
+			_, err := metricsFile.Write(metricsData)
 			if err!= nil {
 				log.Errorf("GRPC Server - Could not write to metrics file: %v", err)
 			}
