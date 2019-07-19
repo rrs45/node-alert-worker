@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 	"net"
+	"time"
 	"os"
 	"fmt"
 	"context"
@@ -21,14 +22,16 @@ type Server struct {
 	WorkCh chan *workerpb.TaskRequest
 	StatusCache  *cache.StatusCache
 	PodName string
+	MetricsPath string
 }
 
 //NewServer initializes task service
-func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache, podName string) *Server {
+func NewServer(workCh chan *workerpb.TaskRequest, statusCache *cache.StatusCache, podName string, metricsPath string) *Server {
 	return &Server{
 		WorkCh: workCh,
 		StatusCache:statusCache,
 		PodName: podName,
+		MetricsPath: metricsPath,
 	}
 }
 
@@ -38,7 +41,20 @@ p, ok := peer.FromContext(ctx)
 if !ok {
     log.Error("GRPC Server - Cannot get peer info")
 }
+curTime := time.Now().Unix()
+metricsData := make([][]byte, 4)
+
 log.Infof("GRPC Server - Received task from %+v, request: %+v", p.Addr,req)
+metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.node %d %s pod=%s", curTime, req.Node, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.condition %d %s pod=%s",curTime, req.Condition, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.action %d %s pod=%s", curTime, req.Action, s.PodName)) )
+metricsData = append(metricsData, []byte(fmt.Sprintf("put task.received.params %d %s pod=%s", curTime, req.Params, s.PodName)) )
+for _, metric := range metricsData {
+	err := ioutil.WriteFile(s.MetricsPath, metric, 0644) 
+	if err!= nil {
+		log.Errorf("GRPC Server - Could not write to metrics file: %v", err)
+	}
+}
 s.WorkCh <- req
 return &workerpb.TaskAck {
 	Condition: req.GetCondition(),
