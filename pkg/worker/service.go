@@ -42,19 +42,15 @@ if !ok {
     log.Error("GRPC Server - Cannot get peer info")
 }
 curTime := time.Now().Unix()
-metricsData := make([][]byte, 4)
 
 log.Infof("GRPC Server - Received task from %+v, request: %+v", p.Addr,req)
-metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.node %d %s pod=%s", curTime, req.Node, s.PodName)) )
-metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.condition %d %s pod=%s",curTime, req.Condition, s.PodName)) )
-metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.action %d %s pod=%s", curTime, req.Action, s.PodName)) )
-metricsData = append(metricsData, []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received.params %d %s pod=%s", curTime, req.Params, s.PodName)) )
-for _, metric := range metricsData {
-	err := ioutil.WriteFile(s.MetricsPath, metric, 0644) 
-	if err!= nil {
-		log.Errorf("GRPC Server - Could not write to metrics file: %v", err)
-	}
+metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received %d 1 node=%s condition=%s action=%s pod=%s", curTime, req.Node, req.Condition, req.Action, s.PodName))
+
+err := ioutil.WriteFile(s.MetricsPath, metricsData, 0644) 
+if err!= nil {
+	log.Errorf("GRPC Server - Could not write to metrics file: %v", err)
 }
+
 s.WorkCh <- req
 return &workerpb.TaskAck {
 	Condition: req.GetCondition(),
