@@ -28,8 +28,9 @@ WORKERLOOP:
 				break WORKERLOOP
 			}
 			limit <- struct{}{}	
-			go func() {
-				routineID := len(limit)
+			count := len(limit)
+			log.Infof("Worker - Starting routine %d", count)
+			go func(routineID int) {
 				cond := task.Node +"_" + task.Condition
 				log.Infof("Worker Routine%d - setting %s in status cache", routineID, cond)
 				statusCache.Set(cond, types.Status{
@@ -64,7 +65,7 @@ WORKERLOOP:
 				log.Infof("Worker Routine%d - deleting %s from status cache", routineID, cond)
 				statusCache.DelItem(cond)
 				<-limit
-			}()
+			}(count)
 				
 		}
 	}
@@ -79,7 +80,6 @@ close(resultCh)
 
 func execCmd(routineID int, node string, play string, condition string, scriptsDir string) (bool){
 	os.Chdir(scriptsDir)
-
 	cmdName := "ansible-playbook"
 	cmdArgs := []string{"-i", node+",", play, "-e", "play_name="+play}
 	cmd := exec.Command(cmdName, cmdArgs...)
@@ -90,11 +90,14 @@ func execCmd(routineID int, node string, play string, condition string, scriptsD
 		log.Errorf("Worker Routine%d - Error creating StdoutPipe: %v",routineID, err)
 		return false
 	}
+	done := make(chan struct{})
 	scanner := bufio.NewScanner(cmdReader)
+
 	go func() {
 		for scanner.Scan() {
 			log.Infof("Worker Routine%d - %s\n", routineID, scanner.Text())
 		}
+		done  <- struct{}{}
 	}()
 	/*var stdout, stderr bytes.Buffer
     cmd.Stdout = &stdout
@@ -108,6 +111,8 @@ func execCmd(routineID int, node string, play string, condition string, scriptsD
 	  log.Errorf("Worker Routine%d - Cannot run command: %v", routineID, err1) 
 	  return false
 	}
+
+	<- done
 
 	err = cmd.Wait()
 	if err != nil {
