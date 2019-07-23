@@ -6,6 +6,7 @@ import (
 		"os/exec"
 		"bufio"
 		"os"
+		"math/rand"
 	
 		log "github.com/sirupsen/logrus"
 		"github.com/box-node-alert-worker/workerpb"
@@ -28,8 +29,8 @@ WORKERLOOP:
 				break WORKERLOOP
 			}
 			limit <- struct{}{}	
-			count := len(limit)
-			log.Infof("Worker - Starting routine %d", count)
+			randomID := 100 + rand.Intn(999-100)
+			log.Infof("Worker - Starting routine %d", randomID)
 			go func(routineID int) {
 				cond := task.Node +"_" + task.Condition
 				log.Infof("Worker Routine%d - setting %s in status cache", routineID, cond)
@@ -65,12 +66,14 @@ WORKERLOOP:
 				log.Infof("Worker Routine%d - deleting %s from status cache", routineID, cond)
 				statusCache.DelItem(cond)
 				<-limit
-			}(count)
+			}(randomID)
 				
 		}
+		log.Info("Worker - Coming out of worker loop")
 	}
 //Checking if all tasks are completed	
 for i := 0; i < maxTasks; i++ {
+	log.Info("Worker - Checking if no more tasks")
 	limit <- struct{}{}	
 }
 log.Info("Worker - All tasks completed, stopping worker")
