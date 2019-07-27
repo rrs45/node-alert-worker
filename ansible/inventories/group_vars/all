@@ -33,7 +33,7 @@ vault_login_ssh_pub: "{{ vault_path }}/login/ssh_pub/0:value"
 sensu_url:  "https://sensu.{{ vault_env }}.box.net:3000"
 
 
-vault_token: "{{ lookup('pipe', 'sudo cat {{ vault_token_file }}') }}"
+vault_token: "{{ lookup('pipe', 'cat {{ vault_token_file }}') }}"
 vault_lookup: "url={{ vault_url }} validate_certs=True cacert={{ vault_cacerts }} token={{ vault_token }} secret="
 
 # Secrets we've resolved
