@@ -129,7 +129,7 @@ go func() {
 //Publisher
 go func() {
 	log.Info("Starting publisher for node-alert-worker")
-	worker.Publish(clientset, nawo.GetString("responder.namespace"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh, resMetricsFile)
+	worker.Publish(clientset, nawo.GetString("responder.namespace"), nawo.GetString("responder.port"), nawo.GetString("certs.cert_file"), nawo.GetString("certs.key_file"), nawo.GetString("certs.ca_cert_file"), resultCh, resMetricsFile, conf.ServerName)
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatalf("Could not stop http server: %s", err)
 	}

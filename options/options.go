@@ -24,6 +24,7 @@ func NewConfigFromFile(configFile string) (*viper.Viper, error) {
 type Config struct {
 	File string
 	KubeAPIURL string
+	ServerName string
 }
 
 //GetConfig returna new config file
@@ -35,6 +36,7 @@ func GetConfig() *Config {
 func (c *Config) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.File, "file", "/home/rajsingh/go/src/github.com/box-node-alert-worker/config/config.toml", "Configuration file path")
 	fs.StringVar(&c.KubeAPIURL, "apiserver-override", "", "URL of the kubernetes api server")
+	fs.StringVar(&c.ServerName, "responder-name", "", "Name of the responder for TLS auth")
 }
 
 //ValidOrDie validates some of the config parameters

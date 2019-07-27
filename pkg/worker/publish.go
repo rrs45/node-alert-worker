@@ -19,7 +19,7 @@ import (
 )
 
 //Publish publishes the results
-func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult, metricsFile *os.File) {
+func Publish(client *kubernetes.Clientset, namespace string, port string, certFile string, keyFile string, caCertFile string, resultCh <-chan *workerpb.TaskResult, metricsFile *os.File, tlsName string) {
 // Load the certificates from disk
 certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
 if err != nil {
@@ -40,7 +40,7 @@ if ok := certPool.AppendCertsFromPEM(ca); !ok {
 
 // Create the TLS credentials for transport
 creds := credentials.NewTLS(&tls.Config{
-	ServerName: "skynet-node-alert-responder.dsv31.boxdc.net",
+	ServerName: tlsName,
 	Certificates: []tls.Certificate{certificate},
 	RootCAs:      certPool,
 })
