@@ -60,7 +60,7 @@ PUBLISHLOOP:
 				successInt = 1
 			}
 		
-			metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result %d %d node=%s condition=%s action=%s", curTime, successInt, res.Node, res.Condition, res.Action))
+			metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.result %d %d node=%s condition=%s action=%s\n", curTime, successInt, res.Node, res.Condition, res.Action))
 			//err := ioutil.WriteFile(metricsFile, metricsData, 0644) 
 			_, err := metricsFile.Write(metricsData)
 			if err!= nil {
