@@ -44,7 +44,7 @@ if !ok {
 curTime := time.Now().Unix()
 
 log.Infof("GRPC Server - Received task from %+v, request: %+v", p.Addr,req)
-metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received %d 1 node=%s condition=%s action=%s", curTime, req.Node, req.Condition, req.Action))
+metricsData := []byte(fmt.Sprintf("put skynet_node_autoremediation.task.received %d 1 node=%s condition=%s action=%s\n", curTime, req.Node, req.Condition, req.Action))
 
 //err := ioutil.WriteFile(s.MetricsPath, metricsData, 0644) 
 _, err := s.MetricsPath.Write(metricsData)
