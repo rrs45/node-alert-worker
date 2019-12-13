@@ -49,6 +49,13 @@ pipeline {
                 deploy cluster: 'vsv1', app: SKYNET_APP, watch: false, canary: false
             }
         }
+
+        stage('Deploy To LV7') {
+            when { branch 'master'  }
+            steps {
+                deploy cluster: 'lv7', app: SKYNET_APP, watch: false, canary: false
+            }
+        }
     }
         post {
         always {
