@@ -2,9 +2,10 @@ package worker
 
 import (
 		"time"
-		//"bytes"
 		"os/exec"
 		"bufio"
+		"strings"
+		"strconv"
 		"os"
 		"math/rand"
 	
@@ -39,7 +40,7 @@ WORKERLOOP:
 					Params: task.Params,
 					Timestamp: time.Now(),
 				})
-				pass := execCmd(routineID, task.Node, task.Action, task.Condition, scriptsDir)
+				pass := execCmd(routineID, task, scriptsDir)
 				ts := timestamp.Timestamp{
 					Seconds: time.Now().Unix(),
 				}
@@ -81,10 +82,14 @@ close(resultCh)
 
 }
 
-func execCmd(routineID int, node string, play string, condition string, scriptsDir string) (bool){
+func execCmd(routineID int, task *workerpb.TaskRequest, scriptsDir string) (bool){
 	os.Chdir(scriptsDir)
 	cmdName := "ansible-playbook"
-	cmdArgs := []string{"-i", node+",", play, "-e", "play_name="+play}
+	cmdArgs := []string{"-i", task.Node+",", task.Action, "-e", "play_name="+task.Action, "-e", "source="+task.Source, "-e", "routineID="+strconv.Itoa(routineID)}
+	for _, p:= range strings.Fields(task.Params) {
+		cmdArgs = append(cmdArgs, "-e")
+		cmdArgs = append(cmdArgs, p)
+	}
 	cmd := exec.Command(cmdName, cmdArgs...)
 	log.Infof("Worker Routine%d - Running: %s %v", routineID, cmdName, cmdArgs)
 
