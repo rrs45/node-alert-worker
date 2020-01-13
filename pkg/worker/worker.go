@@ -30,7 +30,7 @@ WORKERLOOP:
 				break WORKERLOOP
 			}
 			limit <- struct{}{}	
-			randomID := 100 + rand.Intn(999-100)
+			randomID := 10000 + rand.Intn(99999-10000)
 			log.Infof("Worker - Starting routine %d", randomID)
 			go func(routineID int) {
 				cond := task.Node +"_" + task.Condition
