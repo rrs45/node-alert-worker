@@ -3,7 +3,7 @@
 pipeline {
     agent { label 'skynet' }
     options {
-        timeout(time: 1, unit: 'HOURS')
+        timeout(time: 10, unit: 'HOURS')
     }
     environment {
         SKYNET_APP = 'node-alert-worker'
