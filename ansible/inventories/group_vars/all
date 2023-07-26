@@ -3,7 +3,7 @@
 pod_name: "{{ lookup('env','POD_NAME') }}"
 cluster: "{{ lookup('env','CLUSTER') }}"
 inventory_dir: ./inventories
-apf_uri: https://nomad.prod.box.net/patchingstate/api
+apf_uri: https://nomad.prod.net/patchingstate/api
 
 ## Vault Specific
 
